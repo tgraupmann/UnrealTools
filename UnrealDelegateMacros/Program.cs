@@ -34,7 +34,7 @@ namespace UnrealDelegateMacros
                     writer.WriteLine();
                     writer.WriteLine();
 
-                    for (int index = 0; index <= 8; ++index)
+                    for (int index = 0; index <= 50; ++index)
                     {
                         string[] funcSuffixes =
                         {
@@ -108,6 +108,10 @@ namespace UnrealDelegateMacros
                             writer.Write("#define FUNC_PARAM_LIST");
                             for (int j = 1; j <= index; ++j)
                             {
+                                if (j > 1)
+                                {
+                                    writer.Write(",");
+                                }
                                 writer.Write(" Param{0}Type InParam{0}", j);
                             }
                             writer.WriteLine();
@@ -120,12 +124,20 @@ namespace UnrealDelegateMacros
                             writer.Write("#define FUNC_PARAM_PASSTHRU");
                             for (int j = 1; j <= index; ++j)
                             {
+                                if (j > 1)
+                                {
+                                    writer.Write(",");
+                                }
                                 writer.Write(" InParam{0}", j);
                             }
                             writer.WriteLine();
                             writer.Write("#define FUNC_PARAM_PARMS_PASSIN");
                             for (int j = 1; j <= index; ++j)
                             {
+                                if (j > 1)
+                                {
+                                    writer.Write(",");
+                                }
                                 writer.Write(" Parms.Param{0}", j);
                             }
                             writer.WriteLine();
@@ -151,10 +163,6 @@ namespace UnrealDelegateMacros
                             writer.WriteLine("# include \"DelegateInstanceInterfaceImpl.inl\"");
                             writer.WriteLine();
 
-                            if (index > 0)
-                            {
-                                writer.WriteLine("***********THE BEHAVIOUR CHANGES*************");
-                            }
                             for (int i = 0; i <= 4; ++i)
                             {
                                 string strNumber = GetStringNumber(i);
@@ -201,7 +209,7 @@ namespace UnrealDelegateMacros
                                     }
                                 }
                                 writer.WriteLine();
-                                WritePayloadTemplate2(writer, index, i);
+                                WritePayloadTemplate(writer, index, i);
                                 writer.Write("#define FUNC_PAYLOAD_MEMBERS");
                                 for (int j = 1; j <= i; ++j)
                                 {
@@ -275,12 +283,29 @@ namespace UnrealDelegateMacros
                             {
                                 writer.Write(" RetValType,");
                             }
-                            writer.Write(" DelegateName ) FUNC_DECLARE_DELEGATE( ");
+                            writer.Write(" DelegateName");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", Param{0}Type", j);
+                            }
+                            writer.Write(" ) FUNC_DECLARE_DELEGATE( ");
                             if (hasReturn)
                             {
                                 writer.Write("RetVal_");
                             }
-                            writer.Write("NoParams, DelegateName, ");
+                            if (index == 0)
+                            {
+                                writer.Write("NoParams");
+                            }
+                            else
+                            {
+                                writer.Write("{0}Param", GetStringNumber(index));
+                                if (index > 1)
+                                {
+                                    writer.Write("s");
+                                }
+                            }
+                            writer.Write(", DelegateName, ");
                             if (hasReturn)
                             {
                                 writer.Write("RetValType");
@@ -289,8 +314,11 @@ namespace UnrealDelegateMacros
                             {
                                 writer.Write("void");
                             }
-                            writer.Write(" )");
-                            writer.WriteLine();
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", Param{0}Type", j);
+                            }
+                            writer.WriteLine(" )");
                             if (!hasReturn)
                             {
                                 writer.Write("#define DECLARE_MULTICAST_DELEGATE");
@@ -302,7 +330,30 @@ namespace UnrealDelegateMacros
                                         writer.Write("s");
                                     }
                                 }
-                                writer.WriteLine("( DelegateName ) FUNC_DECLARE_MULTICAST_DELEGATE( NoParams, DelegateName, void )");
+                                writer.Write("( DelegateName");
+                                for (int j = 1; j <= index; ++j)
+                                {
+                                    writer.Write(", Param{0}Type", j);
+                                }
+                                writer.Write(" ) FUNC_DECLARE_MULTICAST_DELEGATE( ");
+                                if (index == 0)
+                                {
+                                    writer.Write("NoParams");
+                                }
+                                else
+                                {
+                                    writer.Write("{0}Param", GetStringNumber(index));
+                                    if (index > 1)
+                                    {
+                                        writer.Write("s");
+                                    }
+                                }
+                                writer.Write(", DelegateName, void ");
+                                for (int j = 1; j <= index; ++j)
+                                {
+                                    writer.Write(", Param{0}Type", j);
+                                }
+                                writer.WriteLine(" )");
                                 writer.Write("#define DECLARE_EVENT");
                                 if (index > 0)
                                 {
@@ -312,7 +363,30 @@ namespace UnrealDelegateMacros
                                         writer.Write("s");
                                     }
                                 }
-                                writer.WriteLine("( OwningType, EventName ) FUNC_DECLARE_EVENT( OwningType, EventName, NoParams, void )");
+                                writer.Write("( OwningType, EventName");
+                                for (int j = 1; j <= index; ++j)
+                                {
+                                    writer.Write(", Param{0}Type", j);
+                                }
+                                writer.Write(" ) FUNC_DECLARE_EVENT( OwningType, EventName, ");
+                                if (index == 0)
+                                {
+                                    writer.Write("NoParams");
+                                }
+                                else
+                                {
+                                    writer.Write("{0}Param", GetStringNumber(index));
+                                    if (index > 1)
+                                    {
+                                        writer.Write("s");
+                                    }
+                                }
+                                writer.Write(", void");
+                                for (int j = 1; j <= index; ++j)
+                                {
+                                    writer.Write(", Param{0}Type", j);
+                                }
+                                writer.WriteLine(" )");
                             }
                             writer.Write("#define DECLARE_DYNAMIC_DELEGATE");
                             if (hasReturn)
@@ -332,7 +406,12 @@ namespace UnrealDelegateMacros
                             {
                                 writer.Write(" RetValType,");
                             }
-                            writer.Write(" DelegateName ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_DELEGATE");
+                            writer.Write(" DelegateName");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", Param{0}Type, Param{0}Name", j);
+                            }
+                            writer.Write(" ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_DELEGATE");
                             if (hasReturn)
                             {
                                 writer.Write("_RETVAL");
@@ -342,12 +421,42 @@ namespace UnrealDelegateMacros
                             {
                                 writer.Write("RetVal_");
                             }
-                            writer.Write("NoParams, DelegateName, DelegateName##_DelegateWrapper, ");
+                            if (index == 0)
+                            {
+                                writer.Write("NoParams");
+                            }
+                            else
+                            {
+                                writer.Write("{0}Param", GetStringNumber(index));
+                                if (index > 1)
+                                {
+                                    writer.Write("s");
+                                }
+                            }
+                            writer.Write(", DelegateName, DelegateName##_DelegateWrapper, ");
                             if (hasReturn)
                             {
                                 writer.Write("RetValType, ");
                             }
-                            writer.Write(", FUNC_CONCAT( *this ), ");
+                            if (index > 0)
+                            {
+                                writer.Write("FUNC_CONCAT(");
+                                for (int j = 1; j <= index; ++j)
+                                {
+                                    if (j > 1)
+                                    {
+                                        writer.Write(",");
+                                    }
+                                    writer.Write(" Param{0}Type InParam{0}", j);
+                                }
+                                writer.Write(" )");
+                            }
+                            writer.Write(", FUNC_CONCAT( *this");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", InParam{0}", j);
+                            }
+                            writer.Write(" ), ");
                             if (hasReturn)
                             {
                                 writer.Write("RetValType");
@@ -356,8 +465,11 @@ namespace UnrealDelegateMacros
                             {
                                 writer.Write("void");
                             }
-                            writer.Write(" )");
-                            writer.WriteLine();
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", Param{0}Type", j);
+                            }
+                            writer.WriteLine(" )");
                             if (!hasReturn)
                             {
                                 writer.Write("#define DECLARE_DYNAMIC_MULTICAST_DELEGATE");
@@ -369,7 +481,49 @@ namespace UnrealDelegateMacros
                                         writer.Write("s");
                                     }
                                 }
-                                writer.WriteLine("( DelegateName ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_MULTICAST_DELEGATE( FWeakObjectPtr, NoParams, DelegateName, DelegateName##_DelegateWrapper, , FUNC_CONCAT( *this ), void )");
+                                writer.Write("( DelegateName");
+                                for (int j = 1; j <= index; ++j)
+                                {
+                                    writer.Write(", Param{0}Type, Param{0}Name", j);
+                                }
+                                writer.Write(" ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_MULTICAST_DELEGATE( FWeakObjectPtr, ");
+                                if (index == 0)
+                                {
+                                    writer.Write("NoParams");
+                                }
+                                else
+                                {
+                                    writer.Write("{0}Param", GetStringNumber(index));
+                                    if (index > 1)
+                                    {
+                                        writer.Write("s");
+                                    }
+                                }
+                                writer.Write(", DelegateName, DelegateName##_DelegateWrapper, ");
+                                if (index > 0)
+                                {
+                                    writer.Write("FUNC_CONCAT(");
+                                    for (int j = 1; j <= index; ++j)
+                                    {
+                                        if (j > 1)
+                                        {
+                                            writer.Write(",");
+                                        }
+                                        writer.Write(" Param{0}Type InParam{0}", j);
+                                    }
+                                    writer.Write(" )");
+                                }
+                                writer.Write(", FUNC_CONCAT( *this");
+                                for (int j = 1; j <= index; ++j)
+                                {
+                                    writer.Write(", InParam{0}", j);
+                                }
+                                writer.Write(" ), void");
+                                for (int j = 1; j <= index; ++j)
+                                {
+                                    writer.Write(", Param{0}Type", j);
+                                }
+                                writer.WriteLine(" )");
                             }
                             WriteUndefine3(writer);
                         }
@@ -410,35 +564,7 @@ namespace UnrealDelegateMacros
             #endregion
         }
 
-        static void WritePayloadTemplate(TextWriter writer, int i, string prefix)
-        {
-            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL RetValType");
-            for (int j = 1; j <= i; ++j)
-            {
-                writer.Write(", {0}{1}Type", prefix, j);
-            }
-            writer.WriteLine();
-            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_TYPENAME typename RetValType");
-            for (int j = 1; j <= i; ++j)
-            {
-                writer.Write(", typename {0}{1}Type", prefix, j);
-            }
-            writer.WriteLine();
-            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
-            for (int j = 1; j <= i; ++j)
-            {
-                writer.Write(", typename {0}{1}TypeNoShadow", prefix, j);
-            }
-            writer.WriteLine();
-            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_ARGS RetValType");
-            for (int j = 1; j <= i; ++j)
-            {
-                writer.Write(", {0}{1}Type", prefix, j);
-            }
-            writer.WriteLine();
-        }
-
-        static void WritePayloadTemplate2(TextWriter writer, int index, int i)
+        static void WritePayloadTemplate(TextWriter writer, int index, int i)
         {
             writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL RetValType");
             for (int j = 1; j <= index; ++j)
