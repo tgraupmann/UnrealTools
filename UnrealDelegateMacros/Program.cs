@@ -34,7 +34,7 @@ namespace UnrealDelegateMacros
                     writer.WriteLine();
                     writer.WriteLine();
 
-                    for (int index = 0; index <= 1; ++index)
+                    for (int index = 0; index <= 8; ++index)
                     {
                         string[] funcSuffixes =
                         {
@@ -72,16 +72,62 @@ namespace UnrealDelegateMacros
                                 writer.Write("typedef RetValType RetValType;");
                             }
                             writer.WriteLine();
-                            writer.WriteLine("#define FUNC_TEMPLATE_DECL RetValType");
-                            writer.WriteLine("#define FUNC_TEMPLATE_DECL_TYPENAME typename RetValType");
-                            writer.WriteLine("#define FUNC_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
-                            writer.WriteLine("#define FUNC_TEMPLATE_ARGS RetValType");
-                            writer.WriteLine("#define FUNC_HAS_PARAMS 0");
-                            writer.WriteLine("#define FUNC_PARAM_LIST");
-                            writer.WriteLine("#define FUNC_PARAM_MEMBERS");
-                            writer.WriteLine("#define FUNC_PARAM_PASSTHRU");
-                            writer.WriteLine("#define FUNC_PARAM_PARMS_PASSIN");
-                            writer.WriteLine("#define FUNC_PARAM_INITIALIZER_LIST");
+                            writer.Write("#define FUNC_TEMPLATE_DECL RetValType");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", Param{0}Type", j);
+                            }
+                            writer.WriteLine();
+                            writer.Write("#define FUNC_TEMPLATE_DECL_TYPENAME typename RetValType");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", typename Param{0}Type", j);
+                            }
+                            writer.WriteLine();
+                            writer.Write("#define FUNC_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", typename Param{0}TypeNoShadow", j);
+                            }
+                            writer.WriteLine();
+                            writer.Write("#define FUNC_TEMPLATE_ARGS RetValType");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(", Param{0}Type", j);
+                            }
+                            writer.WriteLine();
+                            writer.Write("#define FUNC_HAS_PARAMS ");
+                            writer.WriteLine(index);
+                            writer.Write("#define FUNC_PARAM_LIST");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(" Param{0}Type InParam{0}", j);
+                            }
+                            writer.WriteLine();
+                            writer.Write("#define FUNC_PARAM_MEMBERS");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(" Param{0}Type Param{0};", j);
+                            }
+                            writer.WriteLine();
+                            writer.Write("#define FUNC_PARAM_PASSTHRU");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(" InParam{0}", j);
+                            }
+                            writer.WriteLine();
+                            writer.Write("#define FUNC_PARAM_PARMS_PASSIN");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(" Parms.Param{0}", j);
+                            }
+                            writer.WriteLine();
+                            writer.Write("#define FUNC_PARAM_INITIALIZER_LIST");
+                            for (int j = 1; j <= index; ++j)
+                            {
+                                writer.Write(" Param{0}( InParam{0} )", j);
+                            }
+                            writer.WriteLine();
                             writer.Write("#define FUNC_IS_VOID ");
                             if (hasReturn)
                             {
@@ -117,7 +163,18 @@ namespace UnrealDelegateMacros
                                 {
                                     writer.Write("RetVal_");
                                 }
-                                writer.Write("NoParams");
+                                if (index == 0)
+                                {
+                                    writer.Write("NoParams");
+                                }
+                                else
+                                {
+                                    writer.Write("{0}Param", GetStringNumber(index));
+                                    if (i > 1)
+                                    {
+                                        writer.Write("s");
+                                    }
+                                }
                                 if (i > 0)
                                 {
                                     writer.Write("_");
