@@ -18,7 +18,23 @@ namespace UnrealDelegateMacros
         {
             #region DelegateCombinations
 
-            using (FileStream fs = File.Open("../../DelegateCombinations.h", FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite))
+            using (FileStream fs = File.Open("../../HeaderParser.cpp", FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+            {
+                using (StreamWriter writer = new StreamWriter(fs))
+                {
+                    for (int index = 1; index <= MAX_NUMBER_OF_PARAMETERS; ++index)
+                    {
+                        writer.Write("	DelegateParameterCountStrings.Add(TEXT(\"_{0}Param", GetStringNumber(index));
+                        if (index > 1)
+                        {
+                            writer.Write("s");
+                        }
+                        writer.WriteLine("\"));");
+                    }
+                }
+            }
+
+            using (FileStream fs = File.Open("../../DelegateCombinations.h", FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             {
                 using (StreamWriter writer = new StreamWriter(fs))
                 {
@@ -34,7 +50,7 @@ namespace UnrealDelegateMacros
                     writer.WriteLine();
                     writer.WriteLine();
 
-                    for (int index = 0; index <= 50; ++index)
+                    for (int index = 0; index <= MAX_NUMBER_OF_PARAMETERS; ++index)
                     {
                         string[] funcSuffixes =
                         {
@@ -537,7 +553,7 @@ namespace UnrealDelegateMacros
 
             #region DelegateCombinations_Variadics
             //TextWriter writer = (TextWriter)Console.Out;
-            using (FileStream fs = File.Open("../../DelegateCombinations_Variadics.h", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+            using (FileStream fs = File.Open("../../DelegateCombinations_Variadics.h", FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             {
                 using (StreamWriter writer = new StreamWriter(fs))
                 {
