@@ -97,7 +97,14 @@ namespace UnrealDelegateMacros
                             }
                             writer.WriteLine();
                             writer.Write("#define FUNC_HAS_PARAMS ");
-                            writer.WriteLine(index);
+                            if (index > 0)
+                            {
+                                writer.WriteLine("1");
+                            }
+                            else
+                            {
+                                writer.WriteLine("0");
+                            }
                             writer.Write("#define FUNC_PARAM_LIST");
                             for (int j = 1; j <= index; ++j)
                             {
@@ -125,6 +132,10 @@ namespace UnrealDelegateMacros
                             writer.Write("#define FUNC_PARAM_INITIALIZER_LIST");
                             for (int j = 1; j <= index; ++j)
                             {
+                                if (j > 1)
+                                {
+                                    writer.Write(",");
+                                }
                                 writer.Write(" Param{0}( InParam{0} )", j);
                             }
                             writer.WriteLine();
@@ -140,17 +151,22 @@ namespace UnrealDelegateMacros
                             writer.WriteLine("# include \"DelegateInstanceInterfaceImpl.inl\"");
                             writer.WriteLine();
 
-                            for (int i = 0; i <= 4; ++i)
+                            if (index > 0)
+                            {
+                                writer.WriteLine("***********THE BEHAVIOUR CHANGES*************");
+                            }
+                            bool showPayload = true;
+                            for (int i = 0; i <= 4; ++i, showPayload = false)
                             {
                                 string strNumber = GetStringNumber(i);
 
-                                if (i > 0)
+                                if (!showPayload)
                                 {
                                     WriteUndefine(writer);
                                 }
 
                                 writer.Write("#define FUNC_HAS_PAYLOAD ");
-                                if (i == 0)
+                                if (showPayload)
                                 {
                                     writer.WriteLine("0");
                                 }
@@ -170,7 +186,7 @@ namespace UnrealDelegateMacros
                                 else
                                 {
                                     writer.Write("{0}Param", GetStringNumber(index));
-                                    if (i > 1)
+                                    if (index > 1)
                                     {
                                         writer.Write("s");
                                     }
@@ -270,7 +286,15 @@ namespace UnrealDelegateMacros
                             {
                                 writer.Write("_RetVal");
                             }
-                            writer.Write("( ");
+                            if (index > 0)
+                            {
+                                writer.Write("_{0}Param", GetStringNumber(index));
+                                if (index > 1)
+                                {
+                                    writer.Write("s");
+                                }
+                            }
+                            writer.Write("(");
                             if (hasReturn)
                             {
                                 writer.Write(" RetValType,");
@@ -293,15 +317,41 @@ namespace UnrealDelegateMacros
                             writer.WriteLine();
                             if (!hasReturn)
                             {
-                                writer.WriteLine("#define DECLARE_MULTICAST_DELEGATE( DelegateName ) FUNC_DECLARE_MULTICAST_DELEGATE( NoParams, DelegateName, void )");
-                                writer.WriteLine("#define DECLARE_EVENT( OwningType, EventName ) FUNC_DECLARE_EVENT( OwningType, EventName, NoParams, void )");
+                                writer.Write("#define DECLARE_MULTICAST_DELEGATE");
+                                if (index > 0)
+                                {
+                                    writer.Write("_{0}Param", GetStringNumber(index));
+                                    if (index > 1)
+                                    {
+                                        writer.Write("s");
+                                    }
+                                }
+                                writer.WriteLine("( DelegateName ) FUNC_DECLARE_MULTICAST_DELEGATE( NoParams, DelegateName, void )");
+                                writer.Write("#define DECLARE_EVENT");
+                                if (index > 0)
+                                {
+                                    writer.Write("_{0}Param", GetStringNumber(index));
+                                    if (index > 1)
+                                    {
+                                        writer.Write("s");
+                                    }
+                                }
+                                writer.WriteLine("( OwningType, EventName ) FUNC_DECLARE_EVENT( OwningType, EventName, NoParams, void )");
                             }
                             writer.Write("#define DECLARE_DYNAMIC_DELEGATE");
                             if (hasReturn)
                             {
                                 writer.Write("_RetVal");
                             }
-                            writer.Write("( ");
+                            if (index > 0)
+                            {
+                                writer.Write("_{0}Param", GetStringNumber(index));
+                                if (index > 1)
+                                {
+                                    writer.Write("s");
+                                }
+                            }
+                            writer.Write("(");
                             if (hasReturn)
                             {
                                 writer.Write(" RetValType,");
@@ -334,267 +384,20 @@ namespace UnrealDelegateMacros
                             writer.WriteLine();
                             if (!hasReturn)
                             {
-                                writer.WriteLine("#define DECLARE_DYNAMIC_MULTICAST_DELEGATE( DelegateName ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_MULTICAST_DELEGATE( FWeakObjectPtr, NoParams, DelegateName, DelegateName##_DelegateWrapper, , FUNC_CONCAT( *this ), void )");
+                                writer.Write("#define DECLARE_DYNAMIC_MULTICAST_DELEGATE");
+                                if (index > 0)
+                                {
+                                    writer.Write("_{0}Param", GetStringNumber(index));
+                                    if (index > 1)
+                                    {
+                                        writer.Write("s");
+                                    }
+                                }
+                                writer.WriteLine("( DelegateName ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_MULTICAST_DELEGATE( FWeakObjectPtr, NoParams, DelegateName, DelegateName##_DelegateWrapper, , FUNC_CONCAT( *this ), void )");
                             }
                             WriteUndefine3(writer);
                         }
                     }
-
-                    /*
-
-                    for (int i = 0; i <= 4; ++i)
-                    {
-                        string strNumber = GetStringNumber(i);
-
-                        if (i > 0)
-                        {
-                            WriteUndefine(writer);
-                        }
-
-                        writer.Write("#define FUNC_HAS_PAYLOAD ");
-                        if (i == 0)
-                        {
-                            writer.WriteLine("0");
-                        }
-                        else
-                        {
-                            writer.WriteLine("1");
-                        }
-                        writer.Write("#define FUNC_PAYLOAD_SUFFIX NoParams");
-                        if (i > 0)
-                        {
-                            writer.Write("_");
-                            writer.Write(strNumber);
-                            writer.Write("Var");
-                            if (i > 1)
-                            {
-                                writer.Write("s");
-                            }
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL RetValType");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(", Var{0}Type", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_TYPENAME typename RetValType");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(", typename Var{0}Type", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(", typename Var{0}TypeNoShadow", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_TEMPLATE_ARGS RetValType");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(", Var{0}Type", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_MEMBERS");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(" Var{0}Type Var{0};", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_LIST");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            if (j > 1)
-                            {
-                                writer.Write(",");
-                            }
-                            writer.Write(" Var{0}Type InVar{0}", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_PASSTHRU");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            if (j > 1)
-                            {
-                                writer.Write(",");
-                            }
-                            writer.Write(" InVar{0}", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_PASSIN");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            if (j > 1)
-                            {
-                                writer.Write(",");
-                            }
-                            writer.Write(" Var{0}", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_INITIALIZER_LIST");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            if (j > 1)
-                            {
-                                writer.Write(",");
-                            }
-                            writer.Write(" Var{0}( InVar{0} )", j);
-                        }
-                        writer.WriteLine();
-
-                        WriteUndefine2(writer);                        
-                    }
-
-                    WriteUndefine(writer);
-
-                    writer.WriteLine("#include \"DelegateSignatureImpl.inl\"");
-                    writer.WriteLine();
-
-                    writer.WriteLine("#define DECLARE_DELEGATE( DelegateName ) FUNC_DECLARE_DELEGATE( NoParams, DelegateName, void )");
-                    writer.WriteLine("#define DECLARE_MULTICAST_DELEGATE( DelegateName ) FUNC_DECLARE_MULTICAST_DELEGATE( NoParams, DelegateName, void )");
-                    writer.WriteLine("#define DECLARE_EVENT( OwningType, EventName ) FUNC_DECLARE_EVENT( OwningType, EventName, NoParams, void )");
-                    writer.WriteLine("#define DECLARE_DYNAMIC_DELEGATE( DelegateName ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_DELEGATE( FWeakObjectPtr, NoParams, DelegateName, DelegateName##_DelegateWrapper, , FUNC_CONCAT( *this ), void )");
-                    writer.WriteLine("#define DECLARE_DYNAMIC_MULTICAST_DELEGATE( DelegateName ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_MULTICAST_DELEGATE( FWeakObjectPtr, NoParams, DelegateName, DelegateName##_DelegateWrapper, , FUNC_CONCAT( *this ), void )");
-                    WriteUndefine3(writer);
-
-                    /*
-
-                    writer.WriteLine("#define FUNC_SUFFIX RetVal_NoParams");
-                    writer.WriteLine("#define FUNC_RETVAL_TYPEDEF  typedef RetValType RetValType;");
-                    writer.WriteLine("#define FUNC_TEMPLATE_DECL RetValType");
-                    writer.WriteLine("#define FUNC_TEMPLATE_DECL_TYPENAME typename RetValType");
-                    writer.WriteLine("#define FUNC_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
-                    writer.WriteLine("#define FUNC_TEMPLATE_ARGS RetValType");
-                    writer.WriteLine("#define FUNC_HAS_PARAMS 0");
-                    writer.WriteLine("#define FUNC_PARAM_LIST");
-                    writer.WriteLine("#define FUNC_PARAM_MEMBERS");
-                    writer.WriteLine("#define FUNC_PARAM_PASSTHRU");
-                    writer.WriteLine("#define FUNC_PARAM_PARMS_PASSIN");
-                    writer.WriteLine("#define FUNC_PARAM_INITIALIZER_LIST");
-                    writer.WriteLine("#define FUNC_IS_VOID 0");
-                    writer.WriteLine("#include \"DelegateInstanceInterfaceImpl.inl\"");
-                    writer.WriteLine();
-
-                    for (int i = 0; i <= 4; ++i)
-                    {
-                        writer.Write("#define FUNC_HAS_PAYLOAD ");
-                        if (i == 0)
-                        {
-                            writer.WriteLine("0");
-                        }
-                        else
-                        {
-                            writer.WriteLine("1");
-                        }
-                        writer.Write("#define FUNC_PAYLOAD_SUFFIX RetVal_NoParams");
-                        if (i > 0)
-                        {
-                            writer.Write("_{0}Var", GetStringNumber(i));
-                        }
-                        if (i > 1)
-                        {
-                            writer.Write("s");
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL RetValType");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(", Var{0}Type", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_TYPENAME typename RetValType");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(", typename Var{0}Type", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(", typename Var{0}TypeNoShadow", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_TEMPLATE_ARGS RetValType");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(", Var{0}Type", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_MEMBERS");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            writer.Write(" Var{0}Type Var{0};", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_LIST");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            if (j > 1)
-                            {
-                                writer.Write(",");
-                            }
-                            writer.Write(" Var{0}Type InVar{0}", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_PASSTHRU");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            if (j > 1)
-                            {
-                                writer.Write(",");
-                            }
-                            writer.Write(" InVar{0}", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_PASSIN");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            if (j > 1)
-                            {
-                                writer.Write(",");
-                            }
-                            writer.Write(" Var{0}", j);
-                        }
-                        writer.WriteLine();
-                        writer.Write("#define FUNC_PAYLOAD_INITIALIZER_LIST");
-                        for (int j = 1; j <= i; ++j)
-                        {
-                            if (j > 1)
-                            {
-                                writer.Write(",");
-                            }
-                            writer.Write(" Var{0}( InVar{0} )", j);
-                        }
-                        writer.WriteLine();
-                        writer.WriteLine("#define FUNC_IS_CONST 0");
-                        writer.WriteLine("#define FUNC_CONST_SUFFIX");
-                        writer.WriteLine("#include \"DelegateInstancesImpl.inl\"");
-                        writer.WriteLine("#undef FUNC_IS_CONST");
-                        writer.WriteLine("#undef FUNC_CONST_SUFFIX");
-                        writer.WriteLine("#define FUNC_IS_CONST 1");
-                        writer.WriteLine("#define FUNC_CONST_SUFFIX _Const");
-                        writer.WriteLine("#include \"DelegateInstancesImpl.inl\"");
-                        writer.WriteLine("#undef FUNC_IS_CONST");
-                        writer.WriteLine("#undef FUNC_CONST_SUFFIX");
-                        writer.WriteLine();
-
-                        WriteUndefine(writer);
-                    }
-
-                    writer.WriteLine("#include \"DelegateSignatureImpl.inl\"");
-                    writer.WriteLine();
-                    writer.WriteLine("#define DECLARE_DELEGATE_RetVal( RetValType, DelegateName ) FUNC_DECLARE_DELEGATE( RetVal_NoParams, DelegateName, RetValType )");
-                    writer.WriteLine("#define DECLARE_DYNAMIC_DELEGATE_RetVal( RetValType, DelegateName ) BODY_MACRO_COMBINE(CURRENT_FILE_ID,_,__LINE__,_DELEGATE) FUNC_DECLARE_DYNAMIC_DELEGATE_RETVAL( FWeakObjectPtr, RetVal_NoParams, DelegateName, DelegateName##_DelegateWrapper, RetValType, , FUNC_CONCAT( *this ), RetValType )");
-
-                    WriteUndefine3(writer);
-
-                    for (int i = 0; i < 100; ++i)
-                    {                        
-                        WriteUndefine(writer);
-                    }
-
-                    */
 
                     writer.Flush();
                 }
