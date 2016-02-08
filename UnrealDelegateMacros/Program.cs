@@ -155,18 +155,17 @@ namespace UnrealDelegateMacros
                             {
                                 writer.WriteLine("***********THE BEHAVIOUR CHANGES*************");
                             }
-                            bool showPayload = true;
-                            for (int i = 0; i <= 4; ++i, showPayload = false)
+                            for (int i = 0; i <= 4; ++i)
                             {
                                 string strNumber = GetStringNumber(i);
 
-                                if (!showPayload)
+                                if (i > 0)
                                 {
                                     WriteUndefine(writer);
                                 }
 
                                 writer.Write("#define FUNC_HAS_PAYLOAD ");
-                                if (showPayload)
+                                if (i == 0)
                                 {
                                     writer.WriteLine("0");
                                 }
@@ -202,30 +201,7 @@ namespace UnrealDelegateMacros
                                     }
                                 }
                                 writer.WriteLine();
-                                writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL RetValType");
-                                for (int j = 1; j <= i; ++j)
-                                {
-                                    writer.Write(", Var{0}Type", j);
-                                }
-                                writer.WriteLine();
-                                writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_TYPENAME typename RetValType");
-                                for (int j = 1; j <= i; ++j)
-                                {
-                                    writer.Write(", typename Var{0}Type", j);
-                                }
-                                writer.WriteLine();
-                                writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
-                                for (int j = 1; j <= i; ++j)
-                                {
-                                    writer.Write(", typename Var{0}TypeNoShadow", j);
-                                }
-                                writer.WriteLine();
-                                writer.Write("#define FUNC_PAYLOAD_TEMPLATE_ARGS RetValType");
-                                for (int j = 1; j <= i; ++j)
-                                {
-                                    writer.Write(", Var{0}Type", j);
-                                }
-                                writer.WriteLine();
+                                WritePayloadTemplate2(writer, index, i);
                                 writer.Write("#define FUNC_PAYLOAD_MEMBERS");
                                 for (int j = 1; j <= i; ++j)
                                 {
@@ -432,6 +408,78 @@ namespace UnrealDelegateMacros
                 }
             }
             #endregion
+        }
+
+        static void WritePayloadTemplate(TextWriter writer, int i, string prefix)
+        {
+            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL RetValType");
+            for (int j = 1; j <= i; ++j)
+            {
+                writer.Write(", {0}{1}Type", prefix, j);
+            }
+            writer.WriteLine();
+            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_TYPENAME typename RetValType");
+            for (int j = 1; j <= i; ++j)
+            {
+                writer.Write(", typename {0}{1}Type", prefix, j);
+            }
+            writer.WriteLine();
+            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
+            for (int j = 1; j <= i; ++j)
+            {
+                writer.Write(", typename {0}{1}TypeNoShadow", prefix, j);
+            }
+            writer.WriteLine();
+            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_ARGS RetValType");
+            for (int j = 1; j <= i; ++j)
+            {
+                writer.Write(", {0}{1}Type", prefix, j);
+            }
+            writer.WriteLine();
+        }
+
+        static void WritePayloadTemplate2(TextWriter writer, int index, int i)
+        {
+            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL RetValType");
+            for (int j = 1; j <= index; ++j)
+            {
+                writer.Write(", Param{0}Type", j);
+            }
+            for (int j = 1; j <= i; ++j)
+            {
+                writer.Write(", Var{0}Type", j);
+            }
+            writer.WriteLine();
+            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_TYPENAME typename RetValType");
+            for (int j = 1; j <= index; ++j)
+            {
+                writer.Write(", typename Param{0}Type", j);
+            }
+            for (int j = 1; j <= i; ++j)
+            {
+                writer.Write(", typename Var{0}Type", j);
+            }
+            writer.WriteLine();
+            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_DECL_NO_SHADOW typename RetValTypeNoShadow");
+            for (int j = 1; j <= index; ++j)
+            {
+                writer.Write(", typename Param{0}TypeNoShadow", j);
+            }
+            for (int j = 1; j <= i; ++j)
+            {
+                writer.Write(", typename Var{0}TypeNoShadow", j);
+            }
+            writer.WriteLine();
+            writer.Write("#define FUNC_PAYLOAD_TEMPLATE_ARGS RetValType");
+            for (int j = 1; j <= index; ++j)
+            {
+                writer.Write(", Param{0}Type", j);
+            }
+            for (int j = 1; j <= i; ++j)
+            {
+                writer.Write(", Var{0}Type", j);
+            }
+            writer.WriteLine();
         }
 
         static void WriteUndefine(TextWriter writer)
